@@ -1,0 +1,27 @@
+stages:
+  fetching:
+    cmd: python src/fetching.py --start-date 2024-09-01 --end-date 2024-10-18 --output-file data/plenaryprotocols.csv
+    outs:
+      - data/plenaryprotocols.csv
+  separation:
+    cmd: python src/separation.py --input-file data/plenaryprotocols.csv --output-file data/separated_speeches.csv
+    deps:
+      - data/plenaryprotocols.csv
+    outs:
+      - data/separated_speeches.csv
+  preparation:
+    cmd: python src/preparation.py --input data/separated_speeches.csv --output data/processed_speeches.csv
+    deps:
+      - data/separated_speeches.csv
+    outs:
+      - data/processed_speeches.csv
+  evaluation:
+    cmd: python src/evaluation.py --input-file data/processed_speeches.csv --output-folder resources/
+    deps:
+      - data/processed_speeches.csv
+    outs:
+      - resources/
+  cleanup:
+    cmd: rm -f data/plenaryprotocols.csv data/separated_speeches.csv
+    deps:
+      - data/processed_speeches.csv

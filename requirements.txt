@@ -1,0 +1,6 @@
+pandas
+matplotlib
+argparse
+tqdm
+requests
+dvc
