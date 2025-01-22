@@ -1,6 +1,6 @@
 # 🖍 Plenary Protocol Processing Pipeline
 
-Welcome to the **Plenary Protocol Data Pipeline**! This repository provides a structured pipeline to process data from plenary logs. Below is an overview of how to set up and run the pipeline, as well as a description of each stage. �\de80
+Welcome to the **Plenary Protocol Data Pipeline**! This repository provides a structured pipeline to process data from plenary logs. Below is an overview of how to set up and run the pipeline, as well as a description of each stage. 
 
 ---
 
@@ -24,6 +24,10 @@ cd <repository-folder>
 Install the required dependencies using `pip`:
 ```bash
 pip install -r requirements.txt
+```
+Sometimes you need to install `dvc` separately:
+```bash
+pip install dvc
 ```
 
 ### 3. Initialize DVC
