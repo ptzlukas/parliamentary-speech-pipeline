@@ -3,6 +3,7 @@ import datetime
 import math
 import csv
 import argparse
+import os
 
 BASE_URL = "https://search.dip.bundestag.de/api/v1/plenarprotokoll-text"
 API_KEY = "I9FKdCn.hbfefNWCY336dL6x62vfwNKpoN2RZ1gp21"
@@ -74,6 +75,10 @@ def fetch_all_protokolle(start_date, end_date):
     return all_data
 
 def save_to_csv(data_list, filename):
+    output_dir = os.path.dirname(filename)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+
     with open(filename, mode="w", encoding="utf-8", newline="") as csvfile:
         fieldnames = ["id", "dokumentnummer", "datum", "text"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -85,7 +90,7 @@ def main():
     parser = argparse.ArgumentParser(description="Fetch plenary protocols and save them to a CSV file.")
     parser.add_argument("--start-date", type=str, default="2019-09-10", help="Start date in YYYY-MM-DD format.")
     parser.add_argument("--end-date", type=str, default="2024-10-18", help="End date in YYYY-MM-DD format.")
-    parser.add_argument("--output-file", type=str, default="plenarprotokolle.csv", help="Output CSV file name.")
+    parser.add_argument("--output-file", type=str, default="data/plenarprotokolle.csv", help="Output CSV file name.")
     
     args = parser.parse_args()
 
