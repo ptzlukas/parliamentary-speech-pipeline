@@ -1,43 +1,32 @@
 import pandas as pd
 import re
 import argparse
+import numpy as np
 
 #id,dokumentnummer,datum,text,Sprecher,,wordcount
 
 def preprocess_data(input_file, output_file):
     # Load CSV
     df = pd.read_csv(input_file)
-
+    
+    
     # Convert 'datum' column to standardized date format
     # df['datum'] = pd.to_datetime(df['datum'], format='%d.%m.%Y')
     # df['datum'] = df['datum'].dt.strftime('%Y-%m-%d')
     df = df.drop('wordcount', axis=1)
 
     df['datum'] = pd.to_datetime(df['datum'], format='%Y-%m-%d')
-
-    # Convert 'Dr.' column to binary format
     df['Dr.'] = df['Dr.'].apply(lambda x: 1 if x == 'Dr.' else 0)
-
-    # Convert columns to string
-    df['Amt'] = df['Amt'].astype('str')
-    df['Partei'] = df['Partei'].astype('str')
     df['Sprecher'] = df['Sprecher'].astype('str')
 
     # Remove duplicate texts
     df = df.drop_duplicates(subset='text', keep='first')
 
-    # Regex to validate names
-    name_pattern = r'^([A-ZÄÖÜ][a-zäöü]+(-[A-ZÄÖÜ][a-zäöü]+)*\s?)+,\s*([A-ZÄÖÜ][a-zäöü]+(-[A-ZÄÖÜ][a-zäöü]+)*)$'
-
-    def ist_name(value):
-        return bool(re.match(name_pattern, value))
-
-    # Add a column to check for valid names
-    df['ist_name'] = df['Sprecher'].apply(ist_name)
-
     # Filter parties
     filtered_parties = ['BSW', 'AfD', 'CDU/CSU', 'FDP', 'SPD', 'DIE LINKE', 'BÜNDNIS 90/DIE GRÜNEN']
-    df = df[df['Partei'].isin(filtered_parties) | df['Partei'].isnull()]
+    df = df[df['Partei'].isin(filtered_parties) | df['Partei'].isna()]
+
+    
 
     # Dictionary to manually assign parties
     dic_sprecher_partei = {
@@ -80,11 +69,12 @@ def preprocess_data(input_file, output_file):
         else:
             df.drop(index, inplace=True)
 
-    # Fill missing roles with "Abgeordnete(r)"
-    df['Amt'] = df['Amt'].replace('nan', pd.NA)
-    df.loc[df['Amt'].isnull() | (df['Amt'] == ''), 'Amt'] = 'Abgeordnete(r)'
+    # Define roles that should not be replaced
+
+    df['Amt'] = df['Amt'].fillna('Abgeordnete(r)')
 
     # Remove Bundesrat entries
+    # Function to check if a value is a pure integer
     def is_int(x):
         try:
             int(x)
@@ -92,8 +82,9 @@ def preprocess_data(input_file, output_file):
         except ValueError:
             return False
 
-    df['is_bundesrat'] = df['dokumentnummer'].apply(is_int)
-    df = df[~df['is_bundesrat']]
+    df['is_bundestag'] = df['dokumentnummer'].apply(is_int)
+    df = df[~df['is_bundestag']]  # Nur Einträge beibehalten, bei denen 'is_bundestag' True ist
+    
 
     # Combine speeches split by interjections
     grouped_data = (
@@ -112,15 +103,20 @@ def preprocess_data(input_file, output_file):
         return len(text.split())
 
     df['wordcount'] = df['text'].apply(count_words)
-
+    df = df[df['wordcount'] <= 3500]
     # Remove rows containing "Abgeordnet" in the speaker name
+    
+    #Until know there are some remaining problems with the regex pattern. When you search for protokolls further in past because protocol regulations have changed
     df = df[~df['Sprecher'].str.contains("Abgeordnet")]
+    df = df[~df['Sprecher'].str.contains("die Frage")]
+    df = df[~df['Sprecher'].str.contains("Zustimmung")]
+    df = df[~df['Sprecher'].str.contains("Beifall")]
 
     # Add unique ID column
     df['u_id'] = range(1, len(df) + 1)
 
-    df = df.drop('is_bundesrat', axis=1)
-    df = df.drop('ist_name', axis=1)
+    df = df.drop('is_bundestag', axis=1)
+
     column_mapping = {
     "id": "session_id",
     "dokumentnummer": "document_id",
@@ -149,7 +145,6 @@ def preprocess_data(input_file, output_file):
     ]
 
     df = df[desired_order]
-
 
     # Reset index and save to CSV
     df = df.reset_index(drop=True)

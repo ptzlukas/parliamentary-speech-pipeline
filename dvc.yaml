@@ -1,6 +1,6 @@
 stages:
   fetching:
-    cmd: python src/fetching.py --start-date 2024-09-01 --end-date 2024-10-18 --output-file data/plenaryprotocols.csv
+    cmd: python src/fetching.py --start-date 2014-01-01 --end-date 2024-10-18 --output-file data/plenaryprotocols.csv
     outs:
       - data/plenaryprotocols.csv
   separation:

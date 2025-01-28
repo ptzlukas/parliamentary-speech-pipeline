@@ -49,8 +49,12 @@ def evaluate_dataset(input_file, output_folder):
         # Write unique values report
         f.write("\n--- Unique Values ---\n")
         for column, unique_count in unique_values_report.items():
-            unique_values = df[column].unique()  # Get the unique values
-            f.write(f"{column}: {unique_count} unique values ({', '.join(map(str, unique_values))})\n")
+            if column == 'speaker':  # Skip 'speaker' column
+                f.write(f"{column}: Skipped reporting unique values, because list is too long.\n")
+                continue
+            else:
+                unique_values = df[column].unique()  # Get the unique values
+                f.write(f"{column}: {unique_count} unique values ({', '.join(map(str, unique_values))})\n")
         
         # Write statistical summary
         f.write("\n--- Statistical Summary ---\n")
