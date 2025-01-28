@@ -21,6 +21,6 @@ build/
 !.dvc/
 .dvc/cache/
 .dvc/tmp/
-data/
-data/**/*.csv
+.data/*.csv
+.data/**/*.csv
 !.dvc
