@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import argparse
 import numpy as np
+import unicodedata
 
 #id,dokumentnummer,datum,text,Sprecher,,wordcount
 
@@ -14,6 +15,16 @@ def preprocess_data(input_file, output_file):
     # df['datum'] = pd.to_datetime(df['datum'], format='%d.%m.%Y')
     # df['datum'] = df['datum'].dt.strftime('%Y-%m-%d')
     df = df.drop('wordcount', axis=1)
+
+     # Function to normalize strings
+    def normalize_text(text):
+        if isinstance(text, str):
+            return text.replace('\u00A0', ' ')  # Replace non-breaking spaces with regular spaces
+        return text  # Return the original value if it's not a string
+    
+    # Apply normalization to the 'Partei' column
+    df['Partei'] = df['Partei'].apply(normalize_text)
+    
 
     df['datum'] = pd.to_datetime(df['datum'], format='%Y-%m-%d')
     df['Dr.'] = df['Dr.'].apply(lambda x: 1 if x == 'Dr.' else 0)
